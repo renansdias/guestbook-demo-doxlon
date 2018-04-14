@@ -1,0 +1,36 @@
+#!/bin/bash
+
+set -xe
+
+go_workspace=go-workspace
+
+mkdir -p ${HOME}/${go_workspace}/{src,pkg,bin}
+mkdir -p ${HOME}/${go_workspace}/src/github.com/
+
+sudo apt-get update
+sudo apt-get -y upgrade
+sudo apt-get install -y supervisor
+
+wget https://storage.googleapis.com/golang/go1.7.4.linux-amd64.tar.gz
+
+sudo tar -xvf go1.7.4.linux-amd64.tar.gz
+sudo mv go /usr/local
+
+export GOROOT=/usr/local/go
+export GOPATH=$HOME/${go_workspace}
+export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+
+echo "export GOROOT=/usr/local/go" >> ~/.bash_profile
+echo "export GOPATH=$HOME/${go_workspace}/" >> ~/.bash_profile
+echo "export PATH=$GOPATH/bin:$GOROOT/bin:$PATH" >> ~/.bash_profile
+
+go get github.com/renansdias/guestbook
+go build -o ${HOME}/${go_workspace}/src/github.com/renansdias/guestbook/guestbook ${HOME}/${go_workspace}/src/github.com/renansdias/guestbook/main.go
+
+sudo touch /var/log/guestbook.log
+sudo chown -R ubuntu:ubuntu /var/log/guestbook.log
+
+sudo cp guestbook.conf /etc/supervisor/conf.d
+sudo service supervisor start
+sudo supervisorctl reread
+sudo supervisorctl update

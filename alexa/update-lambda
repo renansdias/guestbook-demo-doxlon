@@ -1,0 +1,10 @@
+#!/bin/bash
+
+rm -rf code.zip || true
+zip -r9 code.zip .
+
+aws lambda update-function-code \
+		--function-name JenkinsAlexaSkill \
+		--zip-file fileb://./code.zip \
+		--region eu-west-1 \
+		--profile personal
